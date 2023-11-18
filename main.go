@@ -21,14 +21,17 @@ func main() {
 	sm := http.NewServeMux()
 	sm.Handle("/", ph)
 
+	// creae a new server
 	s := http.Server{
-		Addr:         ":9090",
-		Handler:      sm,
-		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
+		Addr:         ":9090",           // configure the bind address
+		Handler:      sm,                // set the default handler
+		ErrorLog:     l,                 // set the logger for the server
+		IdleTimeout:  120 * time.Second, // max time read request from the client
+		ReadTimeout:  1 * time.Second,   // max time to write response to the client
+		WriteTimeout: 1 * time.Second,   // max time for connections using TCP Keep-Alive
 	}
 
+	// start the server
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
