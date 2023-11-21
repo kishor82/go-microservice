@@ -2,17 +2,29 @@ package data
 
 import (
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-func TestCheckValidation(t *testing.T) {
-	p := Product{
-		Name:  "kishor",
-		Price: 1.00,
-		SKU:   "abs-abc-def",
+func TestProductMissingNameReturnsErr(t *testing.T) {
+	prod := Product{
+		Price: 1.22,
 	}
 
-	err := p.Validate()
-	if err != nil {
-		t.Fatal(err)
-	}
+	v := NewValidation()
+	err := v.Validate(prod)
+	assert.Len(t, err, 2)
 }
+
+func TestProductMissingPriceReturnsErr(t *testing.T) {
+	p := Product{
+		Name:  "abc",
+		Price: -1,
+	}
+
+	v := NewValidation()
+	err := v.Validate(p)
+	assert.Len(t, err, 2)
+}
+
+// TODO: Add more tests here...
