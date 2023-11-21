@@ -34,6 +34,9 @@ func main() {
 	postRouter.HandleFunc("/", ph.AddProduct)
 	postRouter.Use(ph.MiddlewareProductValidation)
 
+	deleteRouter := sm.Methods(http.MethodDelete).Subrouter()
+	deleteRouter.HandleFunc("/{id:[0-9]+}", ph.DeleteProduct)
+
 	ops := middleware.RedocOpts{
 		SpecURL: "/swagger.yaml",
 	}
@@ -41,6 +44,7 @@ func main() {
 	sh := middleware.Redoc(ops, nil)
 
 	getRouter.Handle("/docs", sh)
+	getRouter.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
 	s := http.Server{
 		Addr:         ":9090",
