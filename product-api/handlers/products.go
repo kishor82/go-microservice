@@ -8,7 +8,7 @@ import (
 
 	"github.com/gorilla/mux"
 
-	"github.com/kishor82/go-microservice/data"
+	"github.com/kishor82/go-microservices/product-api/data"
 )
 
 type KeyProduct struct{}

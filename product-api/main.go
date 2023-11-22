@@ -12,8 +12,8 @@ import (
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"github.com/kishor82/go-microservice/data"
-	"github.com/kishor82/go-microservice/handlers"
+	"github.com/kishor82/go-microservices/product-api/data"
+	"github.com/kishor82/go-microservices/product-api/handlers"
 )
 
 func main() {

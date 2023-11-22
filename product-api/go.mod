@@ -1,4 +1,4 @@
-module github.com/kishor82/go-microservice
+module github.com/kishor82/go-microservices/product-api
 
 go 1.21
 

@@ -7,5 +7,5 @@ swagger: install_swagger
 create_sdk_dir:
 	mkdir -p sdk
 
-generate_client: create_sdk_dir
+generate_client: create_sdk_dir swagger
 	cd sdk && swagger generate client -f ../swagger.yaml -A product-api

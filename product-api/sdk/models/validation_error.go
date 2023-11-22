@@ -12,9 +12,9 @@ import (
 	"github.com/go-openapi/swag"
 )
 
-// ValidationError validationError is a collection of validation error messages
+// ValidationError ValidationError validationError is a collection of validation error messages
 //
-// swagger:model validationError
+// swagger:model ValidationError
 type ValidationError struct {
 
 	// messages
