@@ -1,0 +1,18 @@
+
+# Test binary, buit with `go test -c`
+*.test
+
+# output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Go workspace file
+go.work
+
+# swagger files
+
+swagger.yaml
+swagger.json
+
+#imagestore
+
+imagestore
