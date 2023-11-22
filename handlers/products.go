@@ -1,105 +1,56 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"regexp"
 	"strconv"
+
+	"github.com/gorilla/mux"
 
 	"github.com/kishor82/go-microservice/data"
 )
 
+type KeyProduct struct{}
+
+// Products is a http.Handler
 type Products struct {
 	l *log.Logger
+	v *data.Validation
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
+func NewProducts(l *log.Logger, v *data.Validation) *Products {
+	return &Products{l, v}
 }
 
-func (p *Products) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	if r.Method == http.MethodGet {
-		p.getProducts(rw, r)
-	}
+// ErrInvalidProductPath is an error message when the product path is not valid
+var ErrInvalidProductPath = fmt.Errorf("Invalid Path, path should be /products/[id]")
 
-	if r.Method == http.MethodPost {
-		p.addProduct(rw, r)
-	}
-
-	if r.Method == http.MethodPut {
-		p.l.Println("PUT")
-		// expect the id in the URI
-
-		reg := regexp.MustCompile(`/([0-9]+)`)
-		g := reg.FindAllStringSubmatch(r.URL.Path, -1)
-
-		p.l.Println(g)
-
-		if len(g) != 1 {
-			p.l.Println("Invalid URI more than one id")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-		if len(g[0]) != 2 {
-			p.l.Println("Invalid URI more than one capture group")
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-		idString := g[0][1]
-		id, err := strconv.Atoi(idString)
-		if err != nil {
-			p.l.Println("Invalid URI unable to convert to number", idString)
-			http.Error(rw, "Invalid URI", http.StatusBadRequest)
-			return
-		}
-
-		p.updateProducts(id, rw, r)
-		return
-	}
-	// catch all
-	rw.WriteHeader(http.StatusMethodNotAllowed)
+// GenericError is a generic error message returned by a server
+type GenericError struct {
+	Message string `json:"message"`
 }
 
-func (p *Products) getProducts(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle GET products")
+// validationError is a collection of validation error messages
+type validationError struct {
+	Messages []string `json:"messages"`
+}
 
-	// fetch the products from the datastore
-	lp := data.GetProducts()
+// getProductID returns the product ID from the URL
+// panics if cannot convert the id into an integer
+// this should never happen as the router ensures that
+// this is a valid number
 
-	// serialize the list to JSON
-	err := lp.ToJSON(rw)
+func getProductID(r *http.Request) int {
+	// parse the product id from the url
+	vars := mux.Vars(r)
+
+	// convert the id into an integer and return
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(rw, "Unable to marshal json", http.StatusInternalServerError)
-	}
-}
-
-func (p *Products) addProduct(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle POST Products")
-
-	prod := &data.Product{}
-	err := prod.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
-	}
-	data.AddPoroduct(prod)
-}
-
-func (p *Products) updateProducts(id int, rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle PUT Products")
-
-	prod := &data.Product{}
-	err := prod.FromJSON(r.Body)
-	if err != nil {
-		http.Error(rw, "Unable to unmarshal json", http.StatusBadRequest)
-	}
-	err = data.UpdateProduct(id, prod)
-	if err == data.ErrProductNotFound {
-		http.Error(rw, "Product not found", http.StatusNotFound)
-		return
+		// should never happen
+		panic(err)
 	}
 
-	if err != nil {
-		http.Error(rw, "Product not found", http.StatusInternalServerError)
-		return
-	}
+	return id
 }
