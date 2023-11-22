@@ -53,6 +53,7 @@ func main() {
 	// CORS
 	ch := gohandlers.CORS(gohandlers.AllowedOrigins([]string{"http://localhost:3000"}))
 
+	// creae a new server
 	s := http.Server{
 		Addr:         ":9090",
 		Handler:      ch(sm),
@@ -61,6 +62,7 @@ func main() {
 		WriteTimeout: 1 * time.Second,
 	}
 
+	// start the server
 	go func() {
 		err := s.ListenAndServe()
 		if err != nil {
