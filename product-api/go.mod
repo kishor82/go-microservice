@@ -1,6 +1,6 @@
 module github.com/kishor82/go-microservices/product-api
 
-go 1.21
+go 1.21.0
 
 require (
 	github.com/go-openapi/errors v0.20.4
@@ -11,7 +11,9 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
+	github.com/kishor82/go-microservices/currency v0.0.0-20231123132322-0535cd46c255
 	github.com/stretchr/testify v1.8.4
+	google.golang.org/grpc v1.59.0
 )
 
 require (
@@ -28,6 +30,7 @@ require (
 	github.com/go-openapi/spec v0.20.9 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
@@ -42,6 +45,8 @@ require (
 	golang.org/x/net v0.18.0 // indirect
 	golang.org/x/sys v0.14.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20230822172742-b8732ec3820d // indirect
+	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

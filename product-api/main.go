@@ -11,6 +11,8 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	cp "github.com/kishor82/go-microservices/currency/protos/currency"
+	"google.golang.org/grpc"
 
 	"github.com/kishor82/go-microservices/product-api/data"
 	"github.com/kishor82/go-microservices/product-api/handlers"
@@ -20,8 +22,18 @@ func main() {
 	l := log.New(os.Stdout, "product-api", log.LstdFlags)
 	v := data.NewValidation()
 
+	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	defer conn.Close()
+
+	// create client
+	cc := cp.NewCurrencyClient(conn)
+
 	// create the handlers
-	ph := handlers.NewProducts(l, v)
+	ph := handlers.NewProducts(l, v, cc)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()

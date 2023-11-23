@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/gorilla/mux"
+	cp "github.com/kishor82/go-microservices/currency/protos/currency"
 
 	"github.com/kishor82/go-microservices/product-api/data"
 )
@@ -15,12 +16,13 @@ type KeyProduct struct{}
 
 // Products is a http.Handler
 type Products struct {
-	l *log.Logger
-	v *data.Validation
+	l  *log.Logger
+	v  *data.Validation
+	cc cp.CurrencyClient
 }
 
-func NewProducts(l *log.Logger, v *data.Validation) *Products {
-	return &Products{l, v}
+func NewProducts(l *log.Logger, v *data.Validation, cc cp.CurrencyClient) *Products {
+	return &Products{l, v, cc}
 }
 
 // ErrInvalidProductPath is an error message when the product path is not valid
