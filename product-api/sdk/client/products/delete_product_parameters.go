@@ -62,6 +62,12 @@ DeleteProductParams contains all the parameters to send to the API endpoint
 */
 type DeleteProductParams struct {
 
+	/* Currency.
+
+	   Currency Symbol
+	*/
+	Currency *string
+
 	/* ID.
 
 	   The id of the product for which the operation relates
@@ -123,6 +129,17 @@ func (o *DeleteProductParams) SetHTTPClient(client *http.Client) {
 	o.HTTPClient = client
 }
 
+// WithCurrency adds the currency to the delete product params
+func (o *DeleteProductParams) WithCurrency(currency *string) *DeleteProductParams {
+	o.SetCurrency(currency)
+	return o
+}
+
+// SetCurrency adds the currency to the delete product params
+func (o *DeleteProductParams) SetCurrency(currency *string) {
+	o.Currency = currency
+}
+
 // WithID adds the id to the delete product params
 func (o *DeleteProductParams) WithID(id int64) *DeleteProductParams {
 	o.SetID(id)
@@ -141,6 +158,23 @@ func (o *DeleteProductParams) WriteToRequest(r runtime.ClientRequest, reg strfmt
 		return err
 	}
 	var res []error
+
+	if o.Currency != nil {
+
+		// query param currency
+		var qrCurrency string
+
+		if o.Currency != nil {
+			qrCurrency = *o.Currency
+		}
+		qCurrency := qrCurrency
+		if qCurrency != "" {
+
+			if err := r.SetQueryParam("currency", qCurrency); err != nil {
+				return err
+			}
+		}
+	}
 
 	// path param id
 	if err := r.SetPathParam("id", swag.FormatInt64(o.ID)); err != nil {
