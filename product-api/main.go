@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +10,7 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	gohandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
+	"github.com/hashicorp/go-hclog"
 	cp "github.com/kishor82/go-microservices/currency/protos/currency"
 	"google.golang.org/grpc"
 
@@ -19,7 +19,7 @@ import (
 )
 
 func main() {
-	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	l := hclog.Default()
 	v := data.NewValidation()
 
 	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
@@ -32,14 +32,19 @@ func main() {
 	// create client
 	cc := cp.NewCurrencyClient(conn)
 
+	// create database instance
+	db := data.NewProductDB(cc, l)
+
 	// create the handlers
-	ph := handlers.NewProducts(l, v, cc)
+	ph := handlers.NewProducts(l, v, db)
 
 	// create a new serve mux and register the handlers
 	sm := mux.NewRouter()
 
 	getRouter := sm.Methods(http.MethodGet).Subrouter()
+	getRouter.HandleFunc("/products", ph.ListAll).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/products", ph.ListAll)
+	getRouter.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle).Queries("currency", "{[A-Z]{3}}")
 	getRouter.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 
 	putRouter := sm.Methods(http.MethodPut).Subrouter()
@@ -69,6 +74,7 @@ func main() {
 	s := http.Server{
 		Addr:         ":9090",
 		Handler:      ch(sm),
+		ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}),
 		IdleTimeout:  120 * time.Second,
 		ReadTimeout:  1 * time.Second,
 		WriteTimeout: 1 * time.Second,
@@ -76,9 +82,10 @@ func main() {
 
 	// start the server
 	go func() {
+		l.Info("Starting server on port 9090")
 		err := s.ListenAndServe()
 		if err != nil {
-			l.Fatal(err)
+			l.Error("Error starting server", "error", err)
 		}
 	}()
 
@@ -87,7 +94,7 @@ func main() {
 	signal.Notify(sigChan, os.Kill)
 
 	sig := <-sigChan
-	l.Println("Recieved terminate, graceful shutdown", sig)
+	l.Info("Recieved terminate, graceful shutdown", sig)
 
 	tc, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()

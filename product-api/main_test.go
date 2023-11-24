@@ -13,7 +13,8 @@ func TestOurClient(t *testing.T) {
 	c := client.NewHTTPClientWithConfig(nil, cfg)
 
 	params := products.NewListProductsParams()
-	prod, err := c.Products.ListProducts(params)
+	currency := "USD"
+	prod, err := c.Products.ListProducts(params.WithCurrency(&currency))
 	if err != nil {
 		t.Fatal(err)
 	}

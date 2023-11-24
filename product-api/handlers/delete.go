@@ -18,20 +18,25 @@ func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
 	// this will always convert because of the router
 	id := getProductID(r)
 
-	p.l.Println("[DEBUG] deleting record id", id)
+	p.l.Debug("deleting record", "id", id)
 
-	err := data.DeleteProduct(id)
+	err := p.productDB.DeleteProduct(id)
 
 	if err != data.ErrProductNotFound {
-		p.l.Println("[ERROR] deleting record id does not exist")
+		p.l.Error("deleting record id does not exist")
 
 		rw.WriteHeader(http.StatusNotFound)
-		http.Error(rw, "Product not found", http.StatusNotFound)
+		data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
 
 	if err != nil {
-		http.Error(rw, "Product not found", http.StatusInternalServerError)
+		p.l.Error("Unable to delete record", "error", err)
+
+		rw.WriteHeader(http.StatusInternalServerError)
+		data.ToJSON(&GenericError{Message: err.Error()}, rw)
 		return
 	}
+
+	rw.WriteHeader(http.StatusNoContent)
 }

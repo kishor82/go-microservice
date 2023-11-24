@@ -74,4 +74,17 @@ type productIDParameterWrapper struct {
 	// in: path
 	// required: true
 	ID int `json:"id"`
+
+	// Currency Symbol
+	// in: query
+	// required: false
+	Currency string `json:"currency"`
+}
+
+// swagger:parameters listProducts
+type productQueryParamsWrapper struct {
+	// Currency Symbol
+	// in: query
+	// required: false
+	Currency string `json:"currency"`
 }
