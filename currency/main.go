@@ -8,6 +8,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
+	"github.com/kishor82/go-microservices/currency/data"
 	"github.com/kishor82/go-microservices/currency/protos/currency"
 	"github.com/kishor82/go-microservices/currency/server"
 )
@@ -15,9 +16,15 @@ import (
 func main() {
 	log := hclog.Default()
 
+	rates, err := data.NewRates(log)
+	if err != nil {
+		log.Error("Unable to generate rates", err)
+		os.Exit(1)
+	}
+
 	gs := grpc.NewServer()
 
-	cp := server.NewCurrency(log)
+	cp := server.NewCurrency(rates, log)
 
 	currency.RegisterCurrencyServer(gs, cp)
 	reflection.Register(gs)
