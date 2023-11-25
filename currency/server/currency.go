@@ -20,7 +20,7 @@ func NewCurrency(r *data.ExchangeRates, l hclog.Logger) *Currency {
 }
 
 func (c *Currency) GetRate(ctx context.Context, rr *cp.RateRequest) (*cp.RateResponse, error) {
-	c.log.Info("Hallo GetRate", "base", rr.GetBase(), "destination", rr.GetDestination())
+	c.log.Info("GetRate", "base", rr.GetBase(), "destination", rr.GetDestination())
 
 	rate, err := c.rates.GetRate(rr.GetBase().String(), rr.GetDestination().String())
 	if err != nil {

@@ -6,4 +6,4 @@ setup-go-work: ## Sets up your go.work file
 	go work init
 	go work use ./currency
 	go work use ./product-api
-	go work user ./product-images
+	go work use ./product-images
