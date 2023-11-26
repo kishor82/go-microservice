@@ -21,14 +21,12 @@ protos:
 	protoc -I protos/ --go_out=protos --go-grpc_out=protos protos/currency.proto
 
 install-protoc:
-	@if [ ! -x "$(INSTALL_DIR)/protoc" ]; then \
-		wget https://github.com/protocolbuffers/protobuf/releases/download/v$(PROTOC_VERSION)/protoc-$(PROTOC_VERSION)-$(OS)-$(ARCH).zip; \
-		unzip protoc-$(PROTOC_VERSION)-$(OS)-$(ARCH).zip -d protoc-$(PROTOC_VERSION); \
-		sudo mv protoc-$(PROTOC_VERSION)/bin/protoc $(INSTALL_DIR)/protoc; \
-		rm -rf protoc-$(PROTOC_VERSION) protoc-$(PROTOC_VERSION)-$(OS)-$(ARCH).zip; \
-	else \
-		echo "protoc is already installed"; \
-	fi
+ifeq ($(shell uname), Darwin)
+	which protoc || brew install protobuf
+endif
+ifeq ($(shell uname), Linux)
+	which protoc || (sudo apt-get update && sudo apt-get install -y protobuf-compiler)
+endif
 
 install-go-plugins:
 	@if [ ! -x "$(shell go env GOPATH)/bin/protoc-gen-go" ]; then \
