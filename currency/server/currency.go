@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"io"
+	"time"
 
 	"github.com/hashicorp/go-hclog"
 
@@ -11,12 +13,53 @@ import (
 
 type Currency struct {
 	cp.UnimplementedCurrencyServer
-	rates *data.ExchangeRates
-	log   hclog.Logger
+	rates         *data.ExchangeRates
+	log           hclog.Logger
+	subscriptions map[cp.Currency_SubscribeRatesServer][]*cp.RateRequest
 }
 
 func NewCurrency(r *data.ExchangeRates, l hclog.Logger) *Currency {
-	return &Currency{rates: r, log: l}
+	c := &Currency{
+		rates:         r,
+		log:           l,
+		subscriptions: make(map[cp.Currency_SubscribeRatesServer][]*cp.RateRequest),
+	}
+	go c.handleUpdates()
+	return c
+}
+
+func (c *Currency) handleUpdates() {
+	ru := c.rates.MonitorRates(5 * time.Second)
+
+	for rv := range ru {
+		c.log.Info("Got Updated rates", rv)
+		// loop over subscribed clients
+		for k, v := range c.subscriptions {
+			// loop over subscribed rates
+			for _, rr := range v {
+				r, err := c.rates.GetRate(rr.GetBase().String(), rr.GetDestination().String())
+				if err != nil {
+					c.log.Error(
+						"Unable to get update rate",
+						"base",
+						rr.GetBase().String(),
+						"destination",
+						rr.GetDestination().String(),
+					)
+				}
+				err = k.Send(&cp.RateResponse{Base: rr.Base, Destination: rr.Destination, Rate: r})
+				if err != nil {
+					c.log.Error(
+						"Unable to send updated reate",
+						"base",
+						rr.GetBase().String(),
+						"destination",
+						rr.GetDestination().String(),
+					)
+				}
+			}
+		}
+	}
 }
 
 func (c *Currency) GetRate(ctx context.Context, rr *cp.RateRequest) (*cp.RateResponse, error) {
@@ -27,5 +70,33 @@ func (c *Currency) GetRate(ctx context.Context, rr *cp.RateRequest) (*cp.RateRes
 		return nil, err
 	}
 
-	return &cp.RateResponse{Rate: (rate)}, nil
+	return &cp.RateResponse{Base: rr.Base, Destination: rr.Destination, Rate: rate}, nil
+}
+
+// SubscribeRates implements the gRPC bidirection streaming method for the server
+func (c *Currency) SubscribeRates(src cp.Currency_SubscribeRatesServer) error {
+	// handle client messages
+	for {
+		rr, err := src.Recv() // Recv is a blocking method which returns client data
+		// io.EOF signals that the client has closed the connection
+		if err == io.EOF {
+			c.log.Info("Client has closed connection")
+			break
+		}
+		// any other error means the transport between the server and client is unavailable
+		if err != nil {
+			c.log.Error("Unable to read from client", "error", err)
+			break
+		}
+
+		c.log.Info("Handle client request", "request", rr)
+		rrs, ok := c.subscriptions[src]
+		if !ok {
+			rrs = []*cp.RateRequest{}
+		}
+
+		rrs = append(rrs, rr)
+		c.subscriptions[src] = rrs
+	}
+	return nil
 }
