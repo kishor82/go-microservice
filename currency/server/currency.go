@@ -31,8 +31,8 @@ func NewCurrency(r *data.ExchangeRates, l hclog.Logger) *Currency {
 func (c *Currency) handleUpdates() {
 	ru := c.rates.MonitorRates(5 * time.Second)
 
-	for rv := range ru {
-		c.log.Info("Got Updated rates", rv)
+	for range ru {
+		c.log.Info("Got Updated rates")
 		// loop over subscribed clients
 		for k, v := range c.subscriptions {
 			// loop over subscribed rates

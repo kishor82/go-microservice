@@ -92,7 +92,7 @@ func (p *ProductsDB) GetProducts(currency string) (Products, error) {
 	}
 
 	// get exchange rate
-	rate, err := p.GetRate(currency)
+	rate, err := p.getRate(currency)
 	if err != nil {
 		p.log.Error("Unable to get rate", "currency", currency, "error", err)
 		return nil, err
@@ -121,7 +121,7 @@ func (p *ProductsDB) GetProductByID(id int, currency string) (*Product, error) {
 		return productList[i], nil
 	}
 
-	rate, err := p.GetRate(currency)
+	rate, err := p.getRate(currency)
 	if err != nil {
 		p.log.Error("Unable to get rate", "currency", currency, "error", err)
 		return nil, err
@@ -182,7 +182,7 @@ func getNextID() int {
 	return lp.ID + 1
 }
 
-func (p *ProductsDB) GetRate(destination string) (float64, error) {
+func (p *ProductsDB) getRate(destination string) (float64, error) {
 	// if cached return
 	if r, ok := p.rates[destination]; ok {
 		return r, nil
@@ -196,9 +196,8 @@ func (p *ProductsDB) GetRate(destination string) (float64, error) {
 	resp, err := p.currency.GetRate(context.Background(), rr)
 	p.rates[destination] = resp.Rate // update the cache
 
-	if err != nil {
-		return 0, err
-	}
+	// subscribe for updates
+	p.client.Send(rr)
 
 	return resp.Rate, err
 }
