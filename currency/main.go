@@ -27,6 +27,11 @@ func main() {
 	cp := server.NewCurrency(rates, log)
 
 	currency.RegisterCurrencyServer(gs, cp)
+
+	// gRPC Server Reflection provides information about publicly-accessible gRPC services on a server,
+	// and assists clients at runtime to construct RPC requests and responses without precompiled service information.
+	// It is used by gRPC CLI, which can be used to introspect server protos and send/receive test RPCs.
+
 	reflection.Register(gs)
 
 	l, err := net.Listen("tcp", ":9092")
